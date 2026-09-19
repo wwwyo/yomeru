@@ -21,6 +21,11 @@ function lastPageKey(title: string): string {
   return `yomeru:last-page:${title}`;
 }
 
+function readSavedPage(title: string, pagesCount: number): number | null {
+  const saved = Number(localStorage.getItem(lastPageKey(title)));
+  return Number.isInteger(saved) && saved >= 1 && saved <= pagesCount ? saved : null;
+}
+
 export function App() {
   const [bookMeta, setBookMeta] = useState<BookMeta | null>(null);
   const [notes, setNotes] = useState<NoteRecord[]>([]);
@@ -39,6 +44,11 @@ export function App() {
   const notesRef = useRef<NoteRecord[]>([]);
   const pendingSelectionRef = useRef<SelectionInfo | null>(null);
   const noteDraftRef = useRef("");
+  // pdf.js は pagesinit の時点では 1 ページ目のサイズを全ページの仮サイズとして使っており、
+  // 各ページの実サイズは pagesloaded まで確定しない。この本は表紙だけサイズが違うため、
+  // 確定前に currentPageNumber を代入するとレイアウトの再計算のたびに表示位置がずれ続ける。
+  const pagesReadyRef = useRef(false);
+  const pendingJumpRef = useRef<number | null>(null);
   useEffect(() => {
     notesRef.current = notes;
   }, [notes]);
@@ -71,17 +81,20 @@ export function App() {
 
     const handle = createPdfViewer(containerRef.current, viewerElRef.current);
     pdfHandleRef.current = handle;
+    pagesReadyRef.current = false;
     const container = containerRef.current;
 
     const onPagesInit = () => {
+      // pagesCount は doc.numPages から即座にわかるので、ページ配置が固まる前でも表示してよい。
       setTotalPages(handle.viewer.pagesCount);
-      const savedPage = Number(localStorage.getItem(lastPageKey(bookMeta.title)));
-      if (Number.isInteger(savedPage) && savedPage >= 1 && savedPage <= handle.viewer.pagesCount) {
-        handle.viewer.currentScaleValue = "page-width";
-        handle.viewer.currentPageNumber = savedPage;
-      } else {
-        handle.viewer.currentScaleValue = "page-width";
-      }
+    };
+    const onPagesLoaded = () => {
+      // 全ページの実サイズが判明し、以後のレイアウトが安定する。ページ移動はここから先でだけ行う。
+      pagesReadyRef.current = true;
+      handle.viewer.currentScaleValue = "page-width";
+      const target = pendingJumpRef.current ?? readSavedPage(bookMeta.title, handle.viewer.pagesCount);
+      pendingJumpRef.current = null;
+      if (target) handle.viewer.currentPageNumber = target;
     };
     const onPageChanging = (evt: PageChangingEvent) => {
       setCurrentPage(evt.pageNumber);
@@ -96,6 +109,7 @@ export function App() {
     };
 
     handle.eventBus.on("pagesinit", onPagesInit);
+    handle.eventBus.on("pagesloaded", onPagesLoaded);
     handle.eventBus.on("pagechanging", onPageChanging);
     handle.eventBus.on("pagerendered", onPageRendered);
 
@@ -103,6 +117,7 @@ export function App() {
 
     return () => {
       handle.eventBus.off("pagesinit", onPagesInit);
+      handle.eventBus.off("pagesloaded", onPagesLoaded);
       handle.eventBus.off("pagechanging", onPageChanging);
       handle.eventBus.off("pagerendered", onPageRendered);
       handle.destroy();
@@ -174,16 +189,24 @@ export function App() {
     }
   }
 
-  function handleSelectNote(note: NoteRecord) {
+  // ページサイズ確定(pagesloaded)前に呼ばれた場合は座標がまだ不正確なので、
+  // 確定後に onPagesLoaded 側で実行させるために保留するだけにする。
+  function jumpToPage(page: number) {
     const handle = pdfHandleRef.current;
     if (!handle) return;
-    handle.viewer.currentPageNumber = note.page;
+    if (pagesReadyRef.current) {
+      handle.viewer.currentPageNumber = page;
+    } else {
+      pendingJumpRef.current = page;
+    }
+  }
+
+  function handleSelectNote(note: NoteRecord) {
+    jumpToPage(note.page);
   }
 
   function handleJumpToPage(page: number) {
-    const handle = pdfHandleRef.current;
-    if (!handle) return;
-    handle.viewer.currentPageNumber = page;
+    jumpToPage(page);
   }
 
   return (

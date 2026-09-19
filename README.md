@@ -17,6 +17,8 @@ YOMERU_BOOK=/path/to/book.pdf bun dev
 - `YOMERU_BOOK`（必須）: 読む PDF の絶対パス
 - `YOMERU_NOTES`（省略可）: ハイライト・メモを追記する NDJSON の出力先。省略時は `~/.cache/yomeru/<PDF のファイル名>/notes.ndjson`
 
+vite のポートを固定したいとき（既定の 5173 を他プロセスが使っている場合など）は `bun run dev -- --port 5390 --strictPort` のように追加引数をそのまま vite に渡せる。
+
 ## ハイライト・メモの NDJSON
 
 1 行が 1 レコード。`kind` は `highlight`（ハイライト）か `question`（Claude に聞きたい箇所）。削除は行を消さず tombstone (`{"id":...,"deleted":true,"at":...}`) を追記する。

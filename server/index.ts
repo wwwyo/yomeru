@@ -68,6 +68,13 @@ export function startServer({ bookPath, notesPath, port }: StartOptions) {
         return servePdfjsAsset("standard_fonts", fontMatch[1]!);
       }
 
+      // スキャン PDF の本文ページは JBIG2/OpenJPEG 圧縮の画像を使っており、wasm デコーダなしだと
+      // キャンバスが白紙のまま描画されない(console にエラーは出ず warning で握りつぶされる)。
+      const wasmMatch = url.pathname.match(/^\/wasm\/([^/]+)$/);
+      if (req.method === "GET" && wasmMatch) {
+        return servePdfjsAsset("wasm", wasmMatch[1]!);
+      }
+
       return new Response("Not Found", { status: 404 });
     },
   });

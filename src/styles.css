@@ -1,0 +1,233 @@
+:root {
+  color-scheme: light dark;
+  --border: #d9d9d9;
+  --bg: #fafafa;
+  --fg: #1a1a1a;
+  --accent: #2563eb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Hiragino Sans", sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: white;
+  flex: 0 0 auto;
+}
+
+.toolbar-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 30ch;
+}
+
+.toolbar-page {
+  color: #666;
+  font-variant-numeric: tabular-nums;
+}
+
+.toolbar-jump {
+  display: flex;
+  gap: 4px;
+}
+
+.toolbar-jump input {
+  width: 6ch;
+}
+
+.toolbar-zoom {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.app-body {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+
+.pdf-outer {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.pdf-container {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  background: #525659;
+}
+
+.yomeru-highlight-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.yomeru-highlight-rect {
+  position: absolute;
+  border-radius: 2px;
+  mix-blend-mode: multiply;
+}
+
+.sidebar {
+  flex: 0 0 320px;
+  overflow-y: auto;
+  border-left: 1px solid var(--border);
+  background: white;
+  padding: 12px;
+}
+
+.sidebar-title {
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+
+.sidebar-empty {
+  color: #999;
+  font-size: 13px;
+}
+
+.sidebar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sidebar-item-highlight {
+  border-left-color: #f5c400;
+}
+
+.sidebar-item-question {
+  border-left-color: var(--accent);
+}
+
+.sidebar-item-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  padding: 6px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.sidebar-item-page {
+  font-size: 12px;
+  color: #666;
+}
+
+.sidebar-item-kind {
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.sidebar-item-quote {
+  font-size: 13px;
+}
+
+.sidebar-item-note {
+  font-size: 12px;
+  color: #444;
+}
+
+.sidebar-item-delete {
+  border: none;
+  background: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.sidebar-item-delete:hover {
+  color: #c0392b;
+}
+
+.selection-popup {
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 20;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 240px;
+}
+
+.selection-popup-note {
+  resize: vertical;
+  min-height: 40px;
+  font: inherit;
+  padding: 4px;
+}
+
+.selection-popup-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.selection-popup-actions button {
+  flex: 1;
+  font-size: 12px;
+}
+
+.app-error {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #c0392b;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  z-index: 30;
+}
